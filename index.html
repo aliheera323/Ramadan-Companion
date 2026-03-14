@@ -1,0 +1,1680 @@
+<!--
+  =====================================================================
+  FILE: index.html
+  WHAT THIS FILE DOES:
+    This is the entire Bohri Bhaiya V1 website — one single HTML file
+    that contains all the structure (HTML), styling (CSS), and
+    interactivity (JavaScript) in one place.
+  WHY IT EXISTS:
+    Keeping everything in one file makes V1 simple to share, deploy on
+    GitHub Pages, and open on any device without a web server.
+  HOW IT FITS IN:
+    This is the MVP homepage. Later versions will connect to live APIs
+    for real prayer times, location detection, and push notifications.
+    For now, all times are hardcoded for San Jose CA on March 14, 2026 (Night 26 of Ramadan 1447H).
+  =====================================================================
+-->
+<!DOCTYPE html>
+<!-- DOCTYPE: tells the browser this is a modern HTML5 page -->
+<html lang="en">
+<head>
+  <!-- meta charset: ensures Arabic script and special characters display correctly -->
+  <meta charset="UTF-8">
+  <!-- viewport: makes the page scale correctly on mobile phones -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bohri Bhaiya — بھائی</title>
+
+  <!--
+    Google Fonts: loading three font families
+    - Cormorant Garamond: elegant serif for headings
+    - DM Sans: clean modern sans-serif for body text
+    - Amiri: designed specifically for Arabic/Quranic text
+  -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&family=Amiri:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+
+  <style>
+    /* =====================================================================
+       CSS CUSTOM PROPERTIES (DESIGN TOKENS)
+       These are like named variables for our colors and fonts.
+       Changing one here changes it everywhere on the page.
+       ===================================================================== */
+    :root {
+      --bg:        #FAFAF7;   /* warm white background */
+      --navy:      #1A3A4A;   /* deep navy — primary text */
+      --gold:      #D4AF37;   /* warm gold — accents and highlights */
+      --teal:      #2C6E8A;   /* soft teal — secondary accent */
+      --muted:     #888888;   /* light grey — captions and labels */
+      --cream:     #F2F0EA;   /* slightly darker warm white — card backgrounds */
+      --gold-soft: #F5ECC0;   /* very pale gold — subtle highlight backgrounds */
+      --navy-soft: #EDF2F5;   /* very pale navy — card hover states */
+
+      --font-serif: 'Cormorant Garamond', Georgia, serif;
+      --font-sans:  'DM Sans', system-ui, sans-serif;
+      --font-arabic: 'Amiri', serif;
+
+      --radius-sm:  8px;
+      --radius-md:  14px;
+      --radius-lg:  20px;
+    }
+
+    /* =====================================================================
+       RESET & BASE
+       Removes browser default spacing. Sets our base font and colors.
+       ===================================================================== */
+    *, *::before, *::after {
+      box-sizing: border-box;  /* padding doesn't add to width */
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;  /* smooth scrolling when clicking anchor links */
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--navy);
+      font-family: var(--font-sans);
+      font-size: 16px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;  /* crisper text on macOS/iOS */
+    }
+
+    /* =====================================================================
+       LAYOUT UTILITY
+       max-width: keeps content from stretching too wide on big screens
+       ===================================================================== */
+    .container {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* =====================================================================
+       SCROLL REVEAL ANIMATION
+       Elements with class "reveal" start invisible and fade in when
+       they scroll into view. JavaScript at the bottom triggers this.
+       ===================================================================== */
+    .reveal {
+      opacity: 0;
+      transform: translateY(18px);
+      transition: opacity 0.55s ease, transform 0.55s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* =====================================================================
+       SECTION SPACING
+       ===================================================================== */
+    section {
+      padding: 56px 0;
+    }
+
+    section + section {
+      border-top: 1px solid rgba(26, 58, 74, 0.08);
+    }
+
+    /* =====================================================================
+       TYPOGRAPHY
+       ===================================================================== */
+    h1, h2, h3 {
+      font-family: var(--font-serif);
+      font-weight: 400;
+      line-height: 1.2;
+    }
+
+    h2 {
+      font-size: 2rem;
+      margin-bottom: 8px;
+    }
+
+    .section-label {
+      /* Small uppercase label above section headings */
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--teal);
+      margin-bottom: 6px;
+    }
+
+    .section-subtitle {
+      color: var(--muted);
+      font-size: 14px;
+      margin-bottom: 32px;
+    }
+
+    /* =====================================================================
+       SECTION 1 — HERO
+       ===================================================================== */
+    /* Moon fades in once on page load — gentle, not looping */
+    @keyframes moonFade {
+      from { opacity: 0; transform: translateY(-8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    #hero {
+      padding: 80px 0 60px;
+      text-align: center;
+    }
+
+    /* Hero moon SVG — phase-accurate waxing gibbous for Night 26 */
+    .hero-moon {
+      width: 80px;
+      height: 80px;
+      display: block;
+      margin: 0 auto 28px;
+      animation: moonFade 1.4s ease forwards;
+    }
+
+    /* Wordmark: site name + Arabic script sit on the same visual baseline */
+    .hero-wordmark {
+      display: flex;
+      align-items: baseline;
+      justify-content: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 28px;
+    }
+
+    .site-name {
+      font-family: var(--font-serif);
+      font-size: clamp(2.8rem, 8vw, 4.2rem);
+      font-weight: 300;
+      letter-spacing: -0.01em;
+      color: var(--navy);
+      line-height: 1;
+    }
+
+    /* بھائی — treated as part of the wordmark, not a caption */
+    .site-name-arabic {
+      font-family: var(--font-arabic);
+      font-size: clamp(1.6rem, 4vw, 2.2rem);
+      color: var(--teal);
+      direction: rtl;
+      line-height: 1;
+      opacity: 0.75;
+    }
+
+    .hero-dates {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 16px;
+    }
+
+    .hero-date-gregorian {
+      font-size: 13px;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+    }
+
+    /* Hijri line: date + inline moon phase woven together */
+    .hero-date-hijri {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-size: 14px;
+      color: var(--navy);
+      opacity: 0.8;
+      flex-wrap: wrap;
+    }
+
+    .hero-moon-inline {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 12px;
+      color: var(--muted);
+      background: var(--gold-soft);
+      padding: 2px 8px;
+      border-radius: 100px;
+      opacity: 0.9;
+    }
+
+    .ramadan-day {
+      font-family: var(--font-serif);
+      font-size: 1.6rem;
+      font-weight: 400;
+      color: var(--teal);
+      margin-bottom: 12px;
+    }
+
+    .key-night-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--gold-soft);
+      border: 1px solid rgba(212, 175, 55, 0.3);
+      color: #8B6914;
+      font-size: 13px;
+      font-weight: 500;
+      padding: 6px 14px;
+      border-radius: 100px;
+    }
+
+    /* =====================================================================
+       SECTION 2 — TODAY'S TIMES
+       ===================================================================== */
+    .times-grid {
+      /* display: grid — arranges children in rows and columns */
+      display: grid;
+      grid-template-columns: 1fr 1fr;  /* two equal columns */
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    @media (max-width: 480px) {
+      /* @media: applies styles only when screen width is 480px or less */
+      .times-grid {
+        grid-template-columns: 1fr;  /* stack into one column on small phones */
+      }
+    }
+
+    .time-card {
+      background: var(--cream);
+      border: 1px solid rgba(26, 58, 74, 0.08);
+      border-radius: var(--radius-md);
+      padding: 24px 20px;
+      position: relative;
+      overflow: hidden;  /* clips the decorative pseudo-element below */
+    }
+
+    .time-card::before {
+      /* ::before: creates a decorative element using CSS, no extra HTML needed */
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+    }
+
+    .time-card.suhoor::before { background: var(--teal); }
+    .time-card.iftar::before  { background: var(--gold); }
+
+    .time-card-label {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .time-card-time {
+      font-family: var(--font-serif);
+      font-size: 2.2rem;
+      font-weight: 400;
+      color: var(--navy);
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+
+    .time-card-countdown {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .time-card-countdown span {
+      font-weight: 500;
+      color: var(--teal);
+    }
+
+    .location-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    .location-name {
+      font-weight: 500;
+      color: var(--navy);
+    }
+
+    .location-edit {
+      cursor: pointer;
+      color: var(--teal);
+      font-size: 12px;
+      text-decoration: underline;
+      text-underline-offset: 2px;  /* adds a small gap between text and underline */
+    }
+
+    /* =====================================================================
+       SECTION 3 — PRAYER TIMES
+       ===================================================================== */
+    .prayer-list {
+      display: flex;
+      flex-direction: column;  /* flex-direction: column stacks children vertically */
+      gap: 2px;
+    }
+
+    .prayer-row {
+      display: flex;
+      align-items: center;
+      padding: 16px 18px;
+      border-radius: var(--radius-sm);
+      transition: background 0.2s;
+    }
+
+    .prayer-row:hover {
+      background: var(--cream);
+    }
+
+    .prayer-row.current {
+      background: var(--navy-soft);
+      border: 1px solid rgba(44, 110, 138, 0.15);
+    }
+
+    .prayer-dot {
+      /* The colored indicator dot on each prayer row */
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;  /* makes a perfect circle */
+      background: rgba(26, 58, 74, 0.15);
+      margin-right: 14px;
+      flex-shrink: 0;  /* prevents the dot from squishing on small screens */
+    }
+
+    .prayer-row.current .prayer-dot {
+      background: var(--teal);
+      box-shadow: 0 0 0 3px rgba(44, 110, 138, 0.15);  /* soft glow ring */
+    }
+
+    .prayer-info {
+      flex: 1;  /* flex: 1 makes this div take up all remaining horizontal space */
+    }
+
+    .prayer-name {
+      font-weight: 500;
+      font-size: 15px;
+      color: var(--navy);
+    }
+
+    .prayer-arabic {
+      font-family: var(--font-arabic);
+      font-size: 13px;
+      color: var(--muted);
+      direction: rtl;
+    }
+
+    .prayer-significance {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 1px;
+    }
+
+    .prayer-time-display {
+      font-family: var(--font-serif);
+      font-size: 1.3rem;
+      color: var(--navy);
+      opacity: 0.8;
+      text-align: right;
+    }
+
+    .prayer-current-label {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--teal);
+      text-align: right;
+    }
+
+    /* =====================================================================
+       SECTION 4 — NIYYAT
+       Ceremonial feel: generous space, tinted backgrounds, Arabic given gravity.
+       ===================================================================== */
+    .niyyat-card {
+      border: 1px solid rgba(26, 58, 74, 0.08);
+      border-radius: var(--radius-lg);
+      padding: 40px 36px;
+    }
+
+    /* Roza card: cool-tinted — morning, intention, stillness */
+    .niyyat-card.roza {
+      background: #EEF4F7;
+    }
+
+    /* Iftaar card: warm-tinted — evening, gratitude, completion */
+    .niyyat-card.iftar {
+      background: #FBF5E6;
+      border-color: rgba(212, 175, 55, 0.12);
+    }
+
+    @media (max-width: 480px) {
+      .niyyat-card { padding: 28px 22px; }
+    }
+
+    /* Arabic text — the heart of each card. Given full breathing room. */
+    .niyyat-arabic {
+      font-family: var(--font-arabic);
+      font-size: clamp(1.7rem, 5.5vw, 2.4rem);
+      line-height: 2.2;
+      text-align: right;
+      direction: rtl;
+      color: var(--navy);
+      margin-bottom: 28px;
+      padding-bottom: 28px;
+      border-bottom: 1px solid rgba(26, 58, 74, 0.1);
+    }
+
+    .niyyat-transliteration {
+      font-style: italic;
+      color: var(--teal);
+      font-size: 15px;
+      line-height: 1.9;
+      margin-bottom: 16px;
+    }
+
+    .niyyat-translation {
+      font-size: 15px;
+      color: var(--navy);
+      line-height: 1.8;
+      margin-bottom: 28px;
+      padding-bottom: 28px;
+      border-bottom: 1px solid rgba(26, 58, 74, 0.08);
+    }
+
+    .niyyat-explainer-toggle {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--teal);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: none;
+      border: none;
+      padding: 0;
+      font-family: inherit;
+    }
+
+    .niyyat-explainer-toggle:hover { opacity: 0.7; }
+
+    .niyyat-explainer {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.4s ease;
+    }
+
+    .niyyat-explainer.open {
+      max-height: 320px;
+    }
+
+    .niyyat-explainer-body {
+      padding-top: 16px;
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    /* =====================================================================
+       SECTION 5 — KEY NIGHTS
+       ===================================================================== */
+    .nights-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 6px;
+      margin-bottom: 24px;
+    }
+
+    .nights-grid .day-header {
+      font-size: 9px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-align: center;
+      padding: 4px 0 6px;
+    }
+
+    .nights-grid .blank {
+      aspect-ratio: 1;
+      background: transparent;
+      border: none;
+    }
+
+    .night-chip {
+      /* Each individual night number chip */
+      aspect-ratio: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--muted);
+      background: var(--cream);
+      border: 1px solid transparent;
+      cursor: default;
+      transition: all 0.2s;
+      position: relative;
+    }
+
+    .night-date {
+      display: block;
+      font-size: 9px;
+      font-weight: 400;
+      line-height: 1;
+      opacity: 0.65;
+      color: inherit;
+    }
+
+    .night-chip.key-night {
+      background: var(--gold-soft);
+      border-color: rgba(212, 175, 55, 0.4);
+      color: #7A5C0C;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .night-chip.today {
+      background: var(--navy-soft);
+      border-color: rgba(44, 110, 138, 0.3);
+      color: var(--teal);
+    }
+
+    .night-chip.past {
+      opacity: 0.4;
+    }
+
+    .night-chip.key-night:hover {
+      background: var(--gold);
+      color: #fff;
+      transform: scale(1.08);
+    }
+
+    /* The tooltip that appears on hover for key nights */
+    .night-tooltip {
+      position: absolute;
+      bottom: calc(100% + 8px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--navy);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 400;
+      line-height: 1.4;
+      padding: 8px 12px;
+      border-radius: 8px;
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s;
+      z-index: 10;
+      max-width: 200px;
+      white-space: normal;
+      text-align: center;
+    }
+
+    .night-chip.key-night:hover .night-tooltip {
+      opacity: 1;
+    }
+
+    /* Small arrow on the tooltip pointing down */
+    .night-tooltip::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 5px solid transparent;
+      border-top-color: var(--navy);
+    }
+
+    .key-nights-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 2px;
+    }
+
+    /* =====================================================================
+       FOOTER
+       ===================================================================== */
+    footer {
+      background: var(--cream);
+      border-top: 1px solid rgba(26, 58, 74, 0.08);
+      padding: 40px 0;
+      text-align: center;
+    }
+
+    .footer-moon {
+      display: block;
+      margin: 0 auto 12px;
+      opacity: 0.35;
+    }
+
+    .footer-title {
+      font-family: var(--font-serif);
+      font-size: 1.2rem;
+      color: var(--navy);
+      margin-bottom: 8px;
+    }
+
+    .footer-tagline {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 16px;
+    }
+
+    .footer-disclaimer {
+      font-size: 11px;
+      color: var(--muted);
+      max-width: 480px;
+      margin: 0 auto 16px;
+      line-height: 1.6;
+      opacity: 0.75;
+    }
+
+    .footer-meta {
+      font-size: 11px;
+      color: var(--muted);
+      opacity: 0.5;
+    }
+
+    /* =====================================================================
+       COUNTDOWN TIMER DISPLAY
+       ===================================================================== */
+    .countdown-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(44, 110, 138, 0.08);
+      color: var(--teal);
+      font-size: 13px;
+      font-weight: 500;
+      padding: 4px 10px;
+      border-radius: 100px;
+      margin-top: 8px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ===================================================================
+       SECTION 1 — HERO
+       The first thing a user sees. Establishes identity and date context.
+       =================================================================== -->
+  <!-- ===================================================================
+       SECTION 1 — HERO
+       Warm, grounded identity. Wordmark pairs English + Urdu as equals.
+       Crescent fades in once. Moon phase woven into the Hijri date line.
+       =================================================================== -->
+  <section id="hero">
+    <div class="container">
+      <div class="reveal">
+        <!-- Phase-accurate SVG moon for Night 26 of Ramadan.
+             Waxing gibbous, ~96% illuminated: nearly full, thin shadow on left. -->
+        <svg class="hero-moon" id="hero-moon-svg" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Moon phase">
+          <!-- Soft outer glow ring -->
+          <circle cx="40" cy="40" r="38" fill="#D4AF37" opacity="0.08"/>
+          <!-- Full moon base — warm ivory gold -->
+          <circle cx="40" cy="40" r="34" fill="#F5ECC0"/>
+          <!-- Shadow sliver on the left — for Night 26, just a thin crescent of darkness -->
+          <!-- An ellipse offset to the left creates the waxing gibbous shadow -->
+          <ellipse id="moon-shadow" cx="25" cy="40" rx="14" ry="34" fill="#FAFAF7"/>
+          <!-- Subtle mare texture — dark patches like the real moon surface -->
+          <circle cx="48" cy="30" r="5" fill="#D4AF37" opacity="0.15"/>
+          <circle cx="54" cy="44" r="7" fill="#D4AF37" opacity="0.10"/>
+          <circle cx="44" cy="52" r="4" fill="#D4AF37" opacity="0.12"/>
+          <circle cx="36" cy="38" r="3" fill="#1A3A4A" opacity="0.04"/>
+          <circle cx="52" cy="34" r="2.5" fill="#1A3A4A" opacity="0.05"/>
+          <!-- Crisp outer border to define the sphere -->
+          <circle cx="40" cy="40" r="34" fill="none" stroke="#D4AF37" stroke-width="0.5" opacity="0.4"/>
+        </svg>
+
+        <!-- Wordmark: English and Urdu treated as one unit -->
+        <div class="hero-wordmark">
+          <h1 class="site-name">Bohri Bhaiya</h1>
+          <span class="site-name-arabic">بھائی</span>
+        </div>
+
+        <!-- Dates: stacked, Gregorian above, Hijri + moon below -->
+        <div class="hero-dates">
+          <span class="hero-date-gregorian" id="hero-gregorian">Saturday, March 14, 2026</span>
+          <div class="hero-date-hijri">
+            <span id="hero-hijri">26 Ramadan al-Mubarak 1447 AH</span>
+            <span class="hero-moon-inline" id="hero-moon-label">☽ Waxing Gibbous · 96%</span>
+          </div>
+        </div>
+
+        <p class="ramadan-day" id="hero-ramadan-day">Day 26 of Ramadan</p>
+
+        <p style="font-size: 14px; color: var(--muted);">
+          <span id="hero-message">The final stretch. These last nights carry the greatest reward — keep going.</span>
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================================================================
+       SECTION 2 — TODAY'S TIMES
+       The most critical piece of information. Must be visible immediately.
+       Times are hardcoded for San Jose CA 95120, March 14 2026.
+       =================================================================== -->
+  <section id="times">
+    <div class="container">
+      <div class="reveal">
+        <p class="section-label">Today's Fasting Times</p>
+        <h2>Suhoor &amp; Iftar</h2>
+        <p class="section-subtitle" id="times-subtitle">San Jose, CA — Saturday, March 14</p>
+      </div>
+
+      <div class="times-grid reveal">
+        <!-- SUHOOR CARD -->
+        <div class="time-card suhoor">
+          <p class="time-card-label">Suhoor Ends</p>
+          <p class="time-card-time" id="suhoor-time">5:42 AM</p>
+          <div class="countdown-chip">
+            <!-- Countdown is a static placeholder — JS will make it live -->
+            <span>⏱</span>
+            <span id="suhoor-countdown">Calculating…</span>
+          </div>
+        </div>
+
+        <!-- IFTAR CARD -->
+        <div class="time-card iftar">
+          <p class="time-card-label">Iftar Begins</p>
+          <p class="time-card-time" id="iftar-time">7:14 PM</p>
+          <div class="countdown-chip" style="background: rgba(212,175,55,0.1); color: #8B6914;">
+            <span>⏱</span>
+            <span id="iftar-countdown">Calculating…</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Location bar — geolocation default, manual fallback -->
+      <div class="location-bar reveal" id="location-bar">
+        <span style="font-size:16px">📍</span>
+        <span class="location-name" id="location-display">Detecting location…</span>
+        <span>·</span>
+        <span class="location-edit" onclick="showLocationInput()">Change location</span>
+      </div>
+      <!-- Manual location input — hidden until needed -->
+      <div id="location-input-wrap" style="display:none; margin-top:12px;">
+        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+          <input
+            type="text"
+            id="location-input"
+            placeholder="City name or zip code"
+            style="flex:1; min-width:180px; padding:8px 12px; border:1px solid rgba(26,58,74,0.2); border-radius:var(--radius-sm); font-family:var(--font-sans); font-size:14px; color:var(--navy); background:var(--cream); outline:none;"
+            onkeydown="if(event.key==='Enter') submitLocation()"
+          />
+          <button
+            onclick="submitLocation()"
+            style="padding:8px 16px; background:var(--teal); color:#fff; border:none; border-radius:var(--radius-sm); font-family:var(--font-sans); font-size:13px; font-weight:500; cursor:pointer;">
+            Update
+          </button>
+          <span style="font-size:12px; color:var(--muted); cursor:pointer;" onclick="hideLocationInput()">Cancel</span>
+        </div>
+        <p style="font-size:11px; color:var(--muted); margin-top:6px;">Try "London", "Chicago", or "95120"</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================================================================
+       SECTION 3 — PRAYER TIMES
+       All five daily Namaz with Bohri Shia naming and significance.
+       Asr is highlighted as the "current" prayer for our test time
+       (assuming user is viewing this in the afternoon).
+       =================================================================== -->
+  <section id="prayers">
+    <div class="container">
+      <div class="reveal">
+        <p class="section-label">Daily Prayer</p>
+        <h2>Namaz Times</h2>
+        <p class="section-subtitle">Five prayers, each a pause in the day to return to what matters.</p>
+      </div>
+
+      <div class="prayer-list reveal">
+
+        <!-- FAJR -->
+        <div class="prayer-row" id="prayer-fajr">
+          <div class="prayer-dot"></div>
+          <div class="prayer-info">
+            <p class="prayer-name">Fajr <span class="prayer-arabic">صلاة الفجر</span></p>
+            <p class="prayer-significance">The pre-dawn prayer — offered before Suhoor ends</p>
+          </div>
+          <div>
+            <p class="prayer-time-display" id="time-fajr">5:28 AM</p>
+            <p class="prayer-current-label" id="cur-fajr" style="display:none">Current</p>
+          </div>
+        </div>
+
+        <!-- DHUHR -->
+        <div class="prayer-row" id="prayer-dhuhr">
+          <div class="prayer-dot"></div>
+          <div class="prayer-info">
+            <p class="prayer-name">Dhuhr <span class="prayer-arabic">صلاة الظهر</span></p>
+            <p class="prayer-significance">The midday prayer — a midpoint in the day's fast</p>
+          </div>
+          <div>
+            <p class="prayer-time-display" id="time-dhuhr">1:04 PM</p>
+            <p class="prayer-current-label" id="cur-dhuhr" style="display:none">Current</p>
+          </div>
+        </div>
+
+        <div class="prayer-row" id="prayer-asr">
+          <div class="prayer-dot"></div>
+          <div class="prayer-info">
+            <p class="prayer-name">Asr <span class="prayer-arabic">صلاة العصر</span></p>
+            <p class="prayer-significance">The afternoon prayer — strengthens resolve before Iftar</p>
+          </div>
+          <div>
+            <p class="prayer-time-display" id="time-asr">4:38 PM</p>
+            <p class="prayer-current-label" id="cur-asr" style="display:none">Current</p>
+          </div>
+        </div>
+
+        <div class="prayer-row" id="prayer-maghrib">
+          <div class="prayer-dot"></div>
+          <div class="prayer-info">
+            <p class="prayer-name">Maghrib <span class="prayer-arabic">صلاة المغرب</span></p>
+            <p class="prayer-significance">Offered immediately at Iftar — breaking the fast with prayer</p>
+          </div>
+          <div>
+            <p class="prayer-time-display" id="time-maghrib">7:14 PM</p>
+            <p class="prayer-current-label" id="cur-maghrib" style="display:none">Current</p>
+          </div>
+        </div>
+
+        <div class="prayer-row" id="prayer-isha">
+          <div class="prayer-dot"></div>
+          <div class="prayer-info">
+            <p class="prayer-name">Isha <span class="prayer-arabic">صلاة العشاء</span></p>
+            <p class="prayer-significance">The night prayer — closes the day in remembrance</p>
+          </div>
+          <div>
+            <p class="prayer-time-display" id="time-isha">8:37 PM</p>
+            <p class="prayer-current-label" id="cur-isha" style="display:none">Current</p>
+          </div>
+        </div>
+
+      </div>
+
+      <p class="reveal" style="font-size: 12px; color: var(--muted); margin-top: 16px; padding-left: 4px;">
+        Times calculated using the Shia Ithna Ashari method. Always verify with your local Jamaat.
+      </p>
+    </div>
+  </section>
+
+  <!-- ===================================================================
+       SECTION 4 — NIYYAT OF THE DAY
+       Two Niyyat cards: one for starting the fast (Suhoor), one for
+       breaking it (Iftar). Both are Dawoodi Bohra Shia specific.
+       =================================================================== -->
+  <section id="niyyat">
+    <div class="container">
+      <div class="reveal">
+        <p class="section-label">Intentions of the Fast</p>
+        <h2>Today's Niyyat</h2>
+        <p class="section-subtitle">Two intentions bookend your day of Roza — one to begin, one to complete.</p>
+      </div>
+
+      <!-- NIYYAT CARD 1 — ROZA (BEGINNING THE FAST) -->
+      <div class="niyyat-card roza reveal" style="margin-bottom: 20px;">
+
+        <!-- Card header label with teal top bar -->
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid rgba(26,58,74,0.08);">
+          <div style="width: 3px; height: 36px; background: var(--teal); border-radius: 2px; flex-shrink: 0;"></div>
+          <div>
+            <p style="font-size: 11px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--teal); margin-bottom: 2px;">Before Suhoor</p>
+            <p style="font-family: var(--font-serif); font-size: 1.15rem; color: var(--navy);">Niyyat al-Roza — Intention to Fast</p>
+          </div>
+        </div>
+
+        <!-- Arabic text — using Amiri font, right-to-left direction -->
+        <p class="niyyat-arabic">
+          نَوَيْتُ صَوْمَ غَدٍ مِنْ شَهْرِ رَمَضَانَ الْمُبَارَكِ فَرْضًا لِلَّهِ تَعَالَى
+        </p>
+
+        <!-- English transliteration (pronunciation guide) -->
+        <p class="niyyat-transliteration">
+          "Nawaytu sawma ghadin min shahri Ramadan al-Mubaraki fardhan lillahi ta'ala."
+        </p>
+
+        <!-- Plain English meaning -->
+        <div class="niyyat-translation">
+          <strong style="display: block; font-size: 14px; color: var(--teal); margin-bottom: 6px;">In plain English:</strong>
+          "I intend to fast tomorrow as the obligatory fast of the blessed month of Ramadan, for the sake of Allah, the Most High."
+        </div>
+
+        <!-- Expandable explainer — JavaScript toggles the .open class -->
+        <button class="niyyat-explainer-toggle" onclick="toggleNiyyat('roza')" id="niyyat-roza-btn">
+          <span id="niyyat-roza-arrow">▸</span> What is Niyyat, and why does it matter?
+        </button>
+
+        <div class="niyyat-explainer" id="niyyat-roza-explainer">
+          <div class="niyyat-explainer-body">
+            <p>
+              <em>Niyyat</em> means "intention." In Islamic practice, every act of worship — especially fasting — must be accompanied by a conscious intention in your heart. The fast isn't just skipping food; it's a deliberate act of devotion.
+            </p>
+            <br>
+            <p>
+              In the Dawoodi Bohra tradition, the Niyyat for Roza is ideally said the night before or at Suhoor. You can say it quietly in your heart or aloud — what matters is that you've consciously committed to the fast for the sake of Allah.
+            </p>
+            <br>
+            <p>
+              Think of it like this: eating a meal isn't the same as eating Suhoor. The Niyyat is what transforms a meal into an act of worship.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- NIYYAT CARD 2 — IFTAR (BREAKING THE FAST) -->
+      <div class="niyyat-card iftar reveal">
+
+        <!-- Card header label with gold top bar -->
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid rgba(26,58,74,0.08);">
+          <div style="width: 3px; height: 36px; background: var(--gold); border-radius: 2px; flex-shrink: 0;"></div>
+          <div>
+            <p style="font-size: 11px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: #8B6914; margin-bottom: 2px;">At Iftar · <span id="niyyat-iftar-time">7:14 PM</span></p>
+            <p style="font-family: var(--font-serif); font-size: 1.15rem; color: var(--navy);">Niyyat al-Iftaar — Intention to Break Fast</p>
+          </div>
+        </div>
+
+        <!-- Arabic text — Bohri Shia Iftaar Niyyat -->
+        <p class="niyyat-arabic">
+          اللَّهُمَّ لَكَ صُمْتُ وَعَلَى رِزْقِكَ أَفْطَرْتُ
+        </p>
+
+        <!-- English transliteration -->
+        <p class="niyyat-transliteration">
+          "Allahumma laka sumtu wa 'ala rizqika aftartu."
+        </p>
+
+        <!-- Plain English meaning -->
+        <div class="niyyat-translation">
+          <strong style="display: block; font-size: 14px; color: #8B6914; margin-bottom: 6px;">In plain English:</strong>
+          "O Allah, for You I fasted, and with Your provision I break my fast."
+        </div>
+
+        <!-- Expandable explainer for the Iftaar Niyyat -->
+        <button class="niyyat-explainer-toggle" onclick="toggleNiyyat('iftar')" id="niyyat-iftar-btn" style="color: #8B6914;">
+          <span id="niyyat-iftar-arrow">▸</span> When and how do I say this?
+        </button>
+
+        <div class="niyyat-explainer" id="niyyat-iftar-explainer">
+          <div class="niyyat-explainer-body">
+            <p>
+              This Niyyat is said at the moment of Iftar — ideally just before the first sip of water or bite of food, precisely when Maghrib begins (7:14 PM today).
+            </p>
+            <br>
+            <p>
+              In the Dawoodi Bohra tradition, it is customary to break the fast with water and a date, recite this Niyyat, and then offer Maghrib Namaz before the main Iftar meal. The Niyyat acknowledges that the fast was for Allah's sake, and that even the food you now eat is a provision from Him.
+            </p>
+            <br>
+            <p>
+              It completes the intention set at Suhoor — together, the two Niyyat frame the entire day of Roza as a conscious, bookended act of worship.
+            </p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===================================================================
+       SECTION 6 — KEY NIGHTS OF RAMADAN
+       30-night grid with the four key Bohri nights (19, 21, 23, 27)
+       visually marked. Today (Night 14) is also highlighted.
+       Hover on key nights to see their significance.
+       =================================================================== -->
+  <section id="nights">
+    <div class="container">
+      <div class="reveal">
+        <p class="section-label">The Nights of Ramadan</p>
+        <h2>30 Nights</h2>
+        <p class="section-subtitle">Four nights carry special significance in the Bohri tradition. Tap to learn more.</p>
+      </div>
+
+      <!-- 30-night grid generated by JavaScript below -->
+      <div class="nights-grid reveal" id="nights-grid"></div>
+
+      <!-- Legend explaining the chip colors -->
+      <div class="key-nights-legend reveal">
+        <div class="legend-item">
+          <div class="legend-dot" style="background: var(--gold-soft); border: 1px solid rgba(212,175,55,0.4);"></div>
+          <span>Key night (tap to learn)</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background: var(--navy-soft); border: 1px solid rgba(44,110,138,0.3);"></div>
+          <span>Tonight (Night 26)</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background: var(--cream); opacity: 0.5;"></div>
+          <span>Past nights</span>
+        </div>
+      </div>
+
+      <!-- Expandable detail panel for key nights — shown when you click a key night -->
+      <div id="night-detail" style="display: none; margin-top: 20px; background: var(--cream); border-radius: var(--radius-md); padding: 20px 24px; border: 1px solid rgba(212,175,55,0.2);">
+        <p style="font-size: 11px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px;" id="night-detail-label"></p>
+        <p style="font-family: var(--font-serif); font-size: 1.2rem; margin-bottom: 8px;" id="night-detail-title"></p>
+        <p style="font-size: 14px; color: var(--muted); line-height: 1.7;" id="night-detail-body"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================================================================
+       FOOTER
+       =================================================================== -->
+  <footer>
+    <div class="container">
+      <svg class="footer-moon" width="24" height="24" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <circle cx="40" cy="40" r="34" fill="#F5ECC0"/>
+        <ellipse cx="25" cy="40" rx="14" ry="34" fill="#FAFAF7"/>
+        <circle cx="40" cy="40" r="34" fill="none" stroke="#D4AF37" stroke-width="0.5" opacity="0.6"/>
+      </svg>
+      <p class="footer-title">Bohri Bhaiya</p>
+      <p class="footer-tagline">Built with love for the Bohri community.</p>
+      <p class="footer-disclaimer">
+        Prayer and fasting times are calculated estimates based on the Shia Ithna Ashari method.
+        Always verify with your local Jamaat. Ramadan Mubarak.
+      </p>
+      <p class="footer-meta">v1.0 · March 2026</p>
+    </div>
+  </footer>
+
+  <!-- ===================================================================
+       JAVASCRIPT
+       Handles: scroll reveal, countdown timers, night grid, Niyyat toggle
+       JavaScript runs after the HTML has fully loaded (it's at the bottom)
+       =================================================================== -->
+  <script>
+    // =====================================================================
+    // BOHRI BHAIYA — Dynamic Engine
+    // This script handles everything that changes based on real data:
+    //   1. Scroll reveal animations
+    //   2. Calendar logic (today's date, Ramadan day, Hijri date)
+    //   3. Location detection (geolocation first, manual fallback)
+    //   4. Aladhan API (prayer & fasting times)
+    //   5. Moon phase (USNO API)
+    //   6. Countdown timers
+    //   7. Prayer current-state highlighting
+    //   8. Night grid
+    // =====================================================================
+
+
+    // ── 1. SCROLL REVEAL ─────────────────────────────────────────────────
+    // IntersectionObserver watches elements entering the viewport and
+    // adds the "visible" class to trigger the fade-in CSS transition.
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+
+    // ── 2. CALENDAR LOGIC ────────────────────────────────────────────────
+    // All date calculations derive from today's real date.
+    // Ramadan 1447H = Feb 17 2026 (official Dawoodi Bohra calendar).
+
+    const RAMADAN_START = new Date('2026-02-17T12:00:00Z'); // UTC noon
+    const RAMADAN_END   = new Date('2026-03-18T12:00:00Z');
+
+    // todayUTC: today's date at UTC noon — used for all date math
+    const todayUTC = new Date();
+    todayUTC.setUTCHours(12, 0, 0, 0);
+
+    // getRamadanNight: returns which night of Ramadan today is (1–30),
+    // or null if we're outside Ramadan.
+    function getRamadanNight(date) {
+      const msPerDay = 86400000;
+      const diff = Math.floor((date - RAMADAN_START) / msPerDay);
+      if (diff < 0 || diff >= 30) return null;
+      return diff + 1;
+    }
+
+    // gregorianToHijri: converts a Gregorian date to Hijri (Islamic lunar calendar).
+    // Uses the standard astronomical algorithm — accurate to ±1 day.
+    function gregorianToHijri(date) {
+      const JD = Math.floor((date.getTime() / 86400000) + 2440587.5);
+      let l = JD - 1948440 + 10632;
+      const n = Math.floor((l - 1) / 10631);
+      l = l - 10631 * n + 354;
+      const j = Math.floor((10985 - l) / 5316) * Math.floor((50 * l) / 17719)
+              + Math.floor(l / 5670) * Math.floor((43 * l) / 15238);
+      l = l - Math.floor((30 - j) / 15) * Math.floor((17719 * j) / 50)
+            - Math.floor(j / 16) * Math.floor((15238 * j) / 43) + 29;
+      const month = Math.floor((24 * l) / 709);
+      const day   = l - Math.floor((709 * month) / 24);
+      const year  = 30 * n + j - 30;
+      const HIJRI_MONTHS = [
+        'Muharram','Safar','Rabi al-Awwal','Rabi al-Thani',
+        'Jumada al-Awwal','Jumada al-Thani','Rajab','Sha\'ban',
+        'Ramadan al-Mubarak','Shawwal','Dhu al-Qi\'dah','Dhu al-Hijjah'
+      ];
+      return { day, month, year, monthName: HIJRI_MONTHS[month - 1] };
+    }
+
+    // heroMessages: contextual messages based on where we are in Ramadan
+    function getHeroMessage(night) {
+      if (!night) return "Ramadan Mubarak.";
+      if (night <= 10)  return "The month of mercy has begun. May your fast be accepted.";
+      if (night <= 20)  return "The blessed month continues. Keep going — you're halfway there.";
+      if (night === 19) return "The final ten nights begin tonight. These are the most sacred nights of the year.";
+      if (night === 21) return "Tonight we remember the martyrdom of Imam Ali (AS). May his sacrifice guide us.";
+      if (night === 23) return "✦ Tonight is Laylat al-Qadr — the Night of Power. Pray with full heart.";
+      if (night === 27) return "✦ Tonight is widely observed as Laylat al-Qadr. Seek forgiveness and guidance.";
+      if (night >= 28)  return "The final nights of Ramadan. Hold on — Eid is near.";
+      return "The final stretch. These last nights carry the greatest reward — keep going.";
+    }
+
+    // updateCalendar: sets all date-related content in the hero
+    function updateCalendar() {
+      const now   = new Date();
+      const hijri = gregorianToHijri(now);
+      const night = getRamadanNight(todayUTC);
+
+      // Gregorian date
+      const gDate = now.toLocaleDateString('en-US', {
+        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+      });
+      const el = document.getElementById('hero-gregorian');
+      if (el) el.textContent = gDate;
+
+      // Hijri date
+      const hijriEl = document.getElementById('hero-hijri');
+      if (hijriEl) hijriEl.textContent = `${hijri.day} ${hijri.monthName} ${hijri.year} AH`;
+
+      // Ramadan day + message
+      const rdEl  = document.getElementById('hero-ramadan-day');
+      const msgEl = document.getElementById('hero-message');
+      if (night) {
+        if (rdEl)  rdEl.textContent  = `Day ${night} of Ramadan`;
+        if (msgEl) msgEl.textContent = getHeroMessage(night);
+      } else {
+        if (rdEl)  rdEl.textContent  = '';
+        if (msgEl) msgEl.textContent = 'Ramadan Mubarak.';
+      }
+
+      // Times subtitle
+      const sub = document.getElementById('times-subtitle');
+      if (sub) {
+        const short = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+        sub.textContent = short;
+      }
+    }
+
+    updateCalendar();
+
+
+    // ── 3. LOCATION ──────────────────────────────────────────────────────
+    // Strategy: try geolocation first. On success, store coords and fetch
+    // times. On failure, check localStorage for a saved location. If none,
+    // show the manual input field.
+
+    // App state — holds the current location used for API calls
+    let appLocation = null; // { lat, lon, label } or { city, label }
+
+    function showLocationInput() {
+      document.getElementById('location-input-wrap').style.display = 'block';
+      document.getElementById('location-input').focus();
+    }
+
+    function hideLocationInput() {
+      document.getElementById('location-input-wrap').style.display = 'none';
+    }
+
+    function setLocationLabel(label) {
+      const el = document.getElementById('location-display');
+      if (el) el.textContent = label;
+    }
+
+    function submitLocation() {
+      const val = document.getElementById('location-input').value.trim();
+      if (!val) return;
+      appLocation = { city: val, label: val };
+      localStorage.setItem('bb_location', JSON.stringify(appLocation));
+      setLocationLabel(val);
+      hideLocationInput();
+      fetchPrayerTimes();
+    }
+
+    function initLocation() {
+      // Check if we have a saved location from a previous visit
+      // localStorage: a browser storage area that persists between visits
+      const saved = localStorage.getItem('bb_location');
+      if (saved) {
+        try {
+          appLocation = JSON.parse(saved);
+          setLocationLabel(appLocation.label);
+          fetchPrayerTimes();
+          return;
+        } catch(e) {}
+      }
+
+      // Try geolocation — the browser asks the user for permission
+      if ('geolocation' in navigator) {
+        setLocationLabel('Detecting location…');
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            // Success: got lat/long from the device
+            appLocation = {
+              lat: pos.coords.latitude,
+              lon: pos.coords.longitude,
+              label: 'Your location'
+            };
+            // Reverse geocode to get a friendly city name
+            reverseGeocode(pos.coords.latitude, pos.coords.longitude);
+            fetchPrayerTimes();
+          },
+          (err) => {
+            // Denied or unavailable — show manual input
+            console.log('Geolocation unavailable:', err.message);
+            setLocationLabel('Enter your location');
+            showLocationInput();
+          },
+          { timeout: 8000 }
+        );
+      } else {
+        // Browser doesn't support geolocation
+        setLocationLabel('Enter your location');
+        showLocationInput();
+      }
+    }
+
+    // reverseGeocode: converts lat/long into a friendly "City, Country" label
+    // Uses the free nominatim API from OpenStreetMap
+    async function reverseGeocode(lat, lon) {
+      try {
+        const res  = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`,
+          { headers: { 'Accept-Language': 'en' } }
+        );
+        const data = await res.json();
+        const city = data.address.city || data.address.town || data.address.village || data.address.county || 'Your location';
+        const country = data.address.country_code?.toUpperCase() || '';
+        const label = country ? `${city}, ${country}` : city;
+        appLocation.label = label;
+        localStorage.setItem('bb_location', JSON.stringify(appLocation));
+        setLocationLabel(label);
+      } catch(e) {
+        setLocationLabel('Your location');
+      }
+    }
+
+
+    // ── 4. ALADHAN API — PRAYER & FASTING TIMES ──────────────────────────
+    // Aladhan.com provides free Islamic prayer times.
+    // Method 7 = Shia Ithna Ashari — the correct method for Bohri Muslims.
+    // API docs: https://aladhan.com/prayer-times-api
+
+    // suhoorTime and iftarTime are stored globally so countdowns can use them
+    let suhoorTime = null;
+    let iftarTime  = null;
+
+    // formatTime: converts "HH:MM" 24-hour to "H:MM AM/PM"
+    function formatTime(t) {
+      if (!t) return '—';
+      const [h, m] = t.split(':').map(Number);
+      const ampm = h >= 12 ? 'PM' : 'AM';
+      const h12  = h % 12 || 12;
+      return `${h12}:${String(m).padStart(2, '0')} ${ampm}`;
+    }
+
+    async function fetchPrayerTimes() {
+      if (!appLocation) return;
+
+      const today = new Date();
+      const d = today.getDate();
+      const m = today.getMonth() + 1;
+      const y = today.getFullYear();
+
+      // Build the API URL based on whether we have coords or a city name
+      // fetch(): sends a request to an external API and waits for the response
+      let url;
+      if (appLocation.lat && appLocation.lon) {
+        url = `https://api.aladhan.com/v1/timings/${d}-${m}-${y}?latitude=${appLocation.lat}&longitude=${appLocation.lon}&method=7`;
+      } else {
+        url = `https://api.aladhan.com/v1/timingsByCity/${d}-${m}-${y}?city=${encodeURIComponent(appLocation.city)}&country=&method=7`;
+      }
+
+      try {
+        const res  = await fetch(url);
+        const data = await res.json();
+
+        if (data.code !== 200) throw new Error('API error');
+
+        const t = data.data.timings;
+        // Suhoor = Fajr time (last moment to eat before the fast begins)
+        // Iftar  = Sunset — the precise moment the fast breaks.
+        // Maghrib prayer follows shortly after. Aladhan returns both separately.
+        suhoorTime = t.Fajr;
+        iftarTime  = t.Sunset;
+
+        // Update fasting time cards
+        const sEl = document.getElementById('suhoor-time');
+        const iEl = document.getElementById('iftar-time');
+        if (sEl) sEl.textContent = formatTime(suhoorTime);
+        if (iEl) iEl.textContent = formatTime(iftarTime);
+
+        // Update Iftar time in Niyyat card
+        const niEl = document.getElementById('niyyat-iftar-time');
+        if (niEl) niEl.textContent = formatTime(iftarTime);
+
+        // Update all 5 prayer times
+        const prayers = {
+          fajr: t.Fajr, dhuhr: t.Dhuhr, asr: t.Asr,
+          maghrib: t.Maghrib, isha: t.Isha
+        };
+        Object.entries(prayers).forEach(([name, time]) => {
+          const el = document.getElementById(`time-${name}`);
+          if (el) el.textContent = formatTime(time);
+        });
+
+        // Update current prayer highlighting
+        updateCurrentPrayer(prayers);
+
+        // Kick off countdowns now that we have real times
+        updateCountdowns();
+
+      } catch(err) {
+        console.error('Prayer times fetch failed:', err);
+        setLocationLabel('Could not load times — try a different location');
+        showLocationInput();
+      }
+    }
+
+    // updateCurrentPrayer: highlights whichever prayer window we're currently in
+    function updateCurrentPrayer(prayers) {
+      const now     = new Date();
+      const nowMins = now.getHours() * 60 + now.getMinutes();
+
+      // Convert "HH:MM" to minutes since midnight for comparison
+      function toMins(t) {
+        if (!t) return 0;
+        const [h, m] = t.split(':').map(Number);
+        return h * 60 + m;
+      }
+
+      const order = ['fajr', 'dhuhr', 'asr', 'maghrib', 'isha'];
+      const times  = order.map(p => toMins(prayers[p]));
+
+      // Clear all existing states first
+      order.forEach(p => {
+        const row = document.getElementById(`prayer-${p}`);
+        const lbl = document.getElementById(`cur-${p}`);
+        if (row) row.classList.remove('current', 'past');
+        if (lbl) lbl.style.display = 'none';
+      });
+
+      // Find current prayer: the last one whose time has passed
+      let currentIdx = -1;
+      times.forEach((t, i) => { if (nowMins >= t) currentIdx = i; });
+
+      order.forEach((p, i) => {
+        const row = document.getElementById(`prayer-${p}`);
+        const lbl = document.getElementById(`cur-${p}`);
+        if (i < currentIdx) {
+          if (row) row.classList.add('past');
+        } else if (i === currentIdx) {
+          if (row) row.classList.add('current');
+          if (lbl) lbl.style.display = 'block';
+        }
+      });
+    }
+
+
+    // ── 5. MOON PHASE ────────────────────────────────────────────────────
+    // Fetches today's moon phase from the USNO API (US Naval Observatory).
+    // Updates the phase label in the hero and reshapes the SVG moon.
+
+    async function fetchMoonPhase() {
+      const now = new Date();
+      const date = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+
+      try {
+        const res  = await fetch(`https://aa.usno.navy.mil/api/moon/phases/date?date=${date}&nump=1`);
+        const data = await res.json();
+
+        // USNO returns illumination as a fraction 0–1; we want percentage
+        // If the API call succeeds, update label and SVG
+        if (data && data.phasedata && data.phasedata.length > 0) {
+          const phase = data.phasedata[0];
+          updateMoonLabel(phase.phase, null);
+          return;
+        }
+      } catch(e) {
+        console.log('USNO API unavailable, using calculated phase');
+      }
+
+      // Fallback: calculate moon phase from scratch using lunar cycle math.
+      // The known new moon on Jan 1 2000 at 18:14 UTC is our anchor point.
+      const KNOWN_NEW_MOON = new Date('2000-01-06T18:14:00Z');
+      const LUNAR_CYCLE    = 29.530588853; // days
+      const msSinceNew     = now - KNOWN_NEW_MOON;
+      const daysSinceNew   = msSinceNew / 86400000;
+      const cyclePos       = ((daysSinceNew % LUNAR_CYCLE) + LUNAR_CYCLE) % LUNAR_CYCLE;
+      const illumination   = 50 - 50 * Math.cos((2 * Math.PI * cyclePos) / LUNAR_CYCLE);
+
+      let phaseName;
+      if      (cyclePos < 1.85)  phaseName = 'New Moon';
+      else if (cyclePos < 7.38)  phaseName = 'Waxing Crescent';
+      else if (cyclePos < 9.22)  phaseName = 'First Quarter';
+      else if (cyclePos < 14.77) phaseName = 'Waxing Gibbous';
+      else if (cyclePos < 16.61) phaseName = 'Full Moon';
+      else if (cyclePos < 22.15) phaseName = 'Waning Gibbous';
+      else if (cyclePos < 23.99) phaseName = 'Last Quarter';
+      else if (cyclePos < 29.53) phaseName = 'Waning Crescent';
+      else                        phaseName = 'New Moon';
+
+      updateMoonLabel(phaseName, Math.round(illumination));
+      updateMoonSVG(illumination, cyclePos < 14.77); // waxing = shadow on left
+    }
+
+    function updateMoonLabel(phaseName, pct) {
+      const el = document.getElementById('hero-moon-label');
+      if (!el) return;
+      el.textContent = pct !== null ? `☽ ${phaseName} · ${Math.round(pct)}%` : `☽ ${phaseName}`;
+    }
+
+    // updateMoonSVG: reshapes the shadow ellipse on the hero moon SVG
+    // based on real illumination. The shadow is an ellipse that slides
+    // left (waxing) or right (waning) — wider = less illuminated.
+    function updateMoonSVG(illumination, waxing) {
+      const shadow = document.getElementById('moon-shadow');
+      if (!shadow) return;
+
+      // illumination 0–100. At 100% (full), shadow width = 0 (no shadow).
+      // At 0% (new moon), shadow covers the whole disc.
+      // The shadow ellipse rx shrinks as illumination increases.
+      const litFraction  = illumination / 100;
+      const darkFraction = 1 - litFraction;
+
+      // rx of shadow ellipse: full disc radius (34) × dark fraction
+      const shadowRx = Math.max(0, 34 * darkFraction);
+
+      // cx: for waxing moon, shadow is on the left (low cx).
+      // For waning moon, shadow is on the right (high cx).
+      // At full illumination, shadow disappears regardless.
+      const cx = waxing ? 40 - (34 - shadowRx) : 40 + (34 - shadowRx);
+
+      shadow.setAttribute('rx', shadowRx.toFixed(1));
+      shadow.setAttribute('cx', cx.toFixed(1));
+
+      // Update aria-label
+      const svg = document.getElementById('hero-moon-svg');
+      if (svg) svg.setAttribute('aria-label', `${Math.round(illumination)}% illuminated moon`);
+    }
+
+    fetchMoonPhase();
+
+
+    // ── 6. COUNTDOWN TIMERS ──────────────────────────────────────────────
+    // Updates every second. Uses real suhoorTime / iftarTime from the API.
+    // Falls back gracefully if times haven't loaded yet.
+
+    function formatDiff(ms) {
+      if (ms <= 0) return 'Passed';
+      const totalSec = Math.floor(ms / 1000);
+      const h = Math.floor(totalSec / 3600);
+      const m = Math.floor((totalSec % 3600) / 60);
+      const s = totalSec % 60;
+      if (h > 0) return `${h}h ${m}m remaining`;
+      if (m > 0) return `${m}m ${s}s remaining`;
+      return `${s}s remaining`;
+    }
+
+    function parseTimeToday(timeStr) {
+      // Converts "HH:MM" into a Date object for today
+      if (!timeStr) return null;
+      const [h, m] = timeStr.split(':').map(Number);
+      const d = new Date();
+      d.setHours(h, m, 0, 0);
+      return d;
+    }
+
+    function updateCountdowns() {
+      const now = new Date();
+      const suhoor = parseTimeToday(suhoorTime);
+      const iftar  = parseTimeToday(iftarTime);
+
+      const sEl = document.getElementById('suhoor-countdown');
+      const iEl = document.getElementById('iftar-countdown');
+
+      if (sEl) sEl.textContent = suhoor ? formatDiff(suhoor - now) : 'Loading…';
+      if (iEl) iEl.textContent = iftar  ? formatDiff(iftar  - now) : 'Loading…';
+    }
+
+    updateCountdowns();
+    setInterval(updateCountdowns, 1000);
+
+
+    // ── 7. NIYYAT TOGGLE ─────────────────────────────────────────────────
+    function toggleNiyyat(card) {
+      const explainer = document.getElementById('niyyat-' + card + '-explainer');
+      const arrow     = document.getElementById('niyyat-' + card + '-arrow');
+      const isOpen    = explainer.classList.contains('open');
+      explainer.classList.toggle('open');
+      arrow.textContent = isOpen ? '▸' : '▾';
+    }
+
+
+    // ── 8. NIGHTS GRID ───────────────────────────────────────────────────
+    const KEY_NIGHTS = {
+      19: {
+        title: 'Night of Remembrance',
+        body: 'The 19th night marks the beginning of the "Aashara al-Akheer" — the final ten nights of Ramadan. In the Bohri tradition, special prayers and remembrance gatherings begin.'
+      },
+      21: {
+        title: 'Night of Martyrdom of Imam Ali (AS)',
+        body: 'The 21st night commemorates the martyrdom of Hazrat Imam Ali ibn Abi Talib (AS), who passed away on this night. Bohris observe this night with particular reverence, recitation of Quran, and communal prayers.'
+      },
+      23: {
+        title: '○ Laylat al-Qadr — Night of Power',
+        body: 'One of the most sacred nights in Ramadan. In the Bohri Shia tradition, the 23rd night is the primary candidate for Laylat al-Qadr — the Night of Power, when the Quran was first revealed. Prayers on this night are said to be worth more than a thousand months of worship.'
+      },
+      27: {
+        title: '○ Laylat al-Qadr — Night of Destiny',
+        body: 'The 27th night is widely observed across many Muslim traditions as Laylat al-Qadr. In Bohri households, this is a night of extended ibaadat, dua, and seeking forgiveness. Many families spend the night in prayer at the masjid.'
+      }
+    };
+
+    const TODAY_NIGHT = getRamadanNight(todayUTC) || 26;
+    const grid        = document.getElementById('nights-grid');
+    const detailPanel = document.getElementById('night-detail');
+
+    const RAMADAN_START_DATE = new Date('2026-02-17T12:00:00Z');
+    const DAY_HEADERS        = ['Sat', 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+    const LEAD_BLANKS        = 3; // Ramadan 1 = Tuesday; Sat grid needs 3 blanks before it
+
+    // Day headers
+    DAY_HEADERS.forEach(d => {
+      const hdr = document.createElement('div');
+      hdr.className = 'day-header';
+      hdr.textContent = d;
+      grid.appendChild(hdr);
+    });
+
+    // Leading blank squares
+    for (let b = 0; b < LEAD_BLANKS; b++) {
+      const blank = document.createElement('div');
+      blank.className = 'blank';
+      grid.appendChild(blank);
+    }
+
+    // Night chips
+    for (let n = 1; n <= 30; n++) {
+      const chip = document.createElement('div');
+      chip.className = 'night-chip';
+
+      const numSpan = document.createElement('span');
+      numSpan.textContent = n;
+      chip.appendChild(numSpan);
+
+      const nightDate = new Date(RAMADAN_START_DATE);
+      nightDate.setUTCDate(RAMADAN_START_DATE.getUTCDate() + (n - 1));
+      const dateLabel = document.createElement('span');
+      dateLabel.className = 'night-date';
+      dateLabel.textContent = nightDate.toLocaleDateString('en-US', {
+        month: 'short', day: 'numeric', timeZone: 'UTC'
+      });
+      chip.appendChild(dateLabel);
+
+      if (n < TODAY_NIGHT) chip.classList.add('past');
+      if (n === TODAY_NIGHT) chip.classList.add('today');
+
+      if (KEY_NIGHTS[n]) {
+        chip.classList.add('key-night');
+        const tooltip = document.createElement('div');
+        tooltip.className = 'night-tooltip';
+        tooltip.textContent = KEY_NIGHTS[n].title;
+        chip.appendChild(tooltip);
+
+        chip.addEventListener('click', () => {
+          document.getElementById('night-detail-label').textContent = `Night ${n} of Ramadan`;
+          document.getElementById('night-detail-title').textContent = KEY_NIGHTS[n].title;
+          document.getElementById('night-detail-body').textContent  = KEY_NIGHTS[n].body;
+          detailPanel.style.display = 'block';
+          detailPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        });
+      }
+
+      grid.appendChild(chip);
+    }
+
+    // Trailing blank squares
+    const TOTAL_CELLS  = LEAD_BLANKS + 30;
+    const TRAIL_BLANKS = (7 - (TOTAL_CELLS % 7)) % 7;
+    for (let b = 0; b < TRAIL_BLANKS; b++) {
+      const blank = document.createElement('div');
+      blank.className = 'blank';
+      grid.appendChild(blank);
+    }
+
+
+    // ── INIT ─────────────────────────────────────────────────────────────
+    // Kick everything off. Location init triggers prayer time fetch,
+    // which in turn updates countdowns and current prayer state.
+    initLocation();
+
+  </script>
+
+</body>
+</html>
